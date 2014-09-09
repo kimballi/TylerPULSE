@@ -1,0 +1,10 @@
+#HTML#
+Attention: <br>
+As of *SystemDate*, you currently have the following teachers who have not updated their grade books within the past 14 calendar days.  This information was based on the status of the grade book as of the previous day of school. <br><br>
+<table border=".1">
+<tr><td>Period</td><td>Teacher</td><td>Course</td><td><center>&nbsp;&nbsp;&nbsp;Last Update&nbsp;&nbsp;&nbsp;</center></td></tr>
+#RECORD_START#
+<tr><td><center>[PERIOD]</center></td><td>[TEACHER]</td><td>[TITLE]</td><td><center>[GRADECHANGE]</center></td></tr>
+#RECORD_END#
+</table><br>
+Please contact us at SISK12@raytownschools.org if you do not want to receive this email.
