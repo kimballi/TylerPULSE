@@ -1,0 +1,85 @@
+/****** Script for SelectTopNRows command from SSMS  ******/
+--Get Discipline Program and Services
+WITH DISCPS AS (
+--This is a custom Program and Service
+ SELECT prs.lngStudentId
+       ,psc.strCode as program
+	   ,pc.lngId
+	   ,prs.strservicefield2 as eventid
+	   ,prs.datStartDate
+	   ,prs.datEndDate
+ FROM tblProgramsServices prs
+ LEFT JOIN tblProgramServiceCodes psc on psc.lngId=prs.lngProgramServiceCodeId
+ LEFT JOIN tblProgramCodes pc on pc.lngId = psc.lngProgramCodeId
+ where pc.lngid = 19
+ )
+
+ ,AMBUS AS (
+ SELECT s.lngid
+       ,dp.strColumnData as AMBus
+ FROM tblstudent s 
+ join lnkDynamicPagesDataToStudent dp on dp.lngStudentId = s.lngId
+ left JOIN lkuDynamicPagesDataFields df on df.lngid=dp.lngPagesDataFieldsId
+ WHERE df.lngid=93
+ )
+  
+ ,PMBUS AS (
+ SELECT s.lngid
+       ,dp.strColumnData as PMBus
+ FROM tblstudent s 
+ join lnkDynamicPagesDataToStudent dp on dp.lngStudentId = s.lngId
+ left JOIN lkuDynamicPagesDataFields df on df.lngid=dp.lngPagesDataFieldsId
+ WHERE df.lngid=95
+ )
+
+SELECT DISTINCT s.strid
+      ,s.lngid
+      ,p.strlastname+' '+p.strfirstname+' '+isnull(p.strmiddlename,'') as StudentName
+      ,y.strTerm as Year
+      ,ic.strCode as IncidentCode 
+      ,ic.strDescription as IncidentDesc
+      ,i.datDateOfIncident
+      ,i.strTimeOfIncident
+      ,ip.strDescription as Location
+      ,ac.strCode as ActionCode
+      ,fltDays as Days
+      ,ac.strDescription as ActionDesc
+      ,i.datDateOfAction
+	  ,i.datDateServed
+      ,prec.strLastName+' '+prec.strFirstName as EnteredBy
+      ,fsp.strLastName+' '+fsp.strFirstName as Teacher
+      ,i.strComment
+      ,sub.strCode as SubCode
+      ,fun.strcode as FuncCode
+      ,fun.strDescription as FuncDesc
+      ,i.lngDisciplineEventsId
+	  ,sy.strDescription as siteyear
+	  ,site.strStateCode as SchoolNbr
+	  ,gl.strCode as Grade
+	  ,disc.program as Probation
+	  ,disc.datStartDate as ProbationStart
+	  ,disc.datEndDate as ProbationEnd
+	  ,am.AMBus
+	  ,pm.PMBus
+  FROM tblIncidents i 
+  JOIN tblstudent s on s.lngid=i.lngstudentid
+  JOIN tblpeople p on p.lngid=s.lngpeopleid
+  JOIN tblSiteYear sy on sy.lngId=i.lngSiteYearId
+  JOIN tblSite site on site.lngid=sy.lngSiteId
+  JOIN tblYear y on y.lngId=sy.lngYearId
+  LEFT JOIN tblStudentEnrollment se on se.lngStudentId=s.lngid and se.lngSiteYearId=sy.lngId
+  LEFT JOIN lkuGradeLevels gl on gl.lngid=se.lngGradeLevelId
+  LEFT JOIN lkuIncidentsCodes ic on ic.lngId=i.lngIncidentCodesId
+  LEFT JOIN lkuIncidentPlaces ip on ip.lngId=i.lngIncidentPlaceId
+  LEFT JOIN lkuIncidentsActionCodes ac on ac.lngId=i.lngActionCodeId
+  LEFT JOIN tblDisciplineIncidentSubCodes sub on sub.lngId=i.lngDisciplineIncidentSubCodesId
+  LEFT JOIN lkuIncidentsFunctionalCodes fun on fun.lngId=i.lngIncidentsFunctionalCodeId
+  LEFT JOIN tblUser urec on urec.lngId=i.lngRecordedByUserId
+  LEFT JOIN tblPeople prec on prec.lngId=urec.lngPeopleId  
+  LEFT JOIN tblFacultyStaff fs on fs.lngId=i.lngTeacherId
+  LEFT JOIN tblPeople fsp on fsp.lngId=fs.lngPeopleId
+  LEFT JOIN DISCPS disc on disc.lngStudentId = s.lngId and disc.eventid=i.lngDisciplineEventsId
+  LEFT JOIN AMBUS am on am.lngid=s.lngid
+  LEFT JOIN PMBUS pm on pm.lngid=s.lngid
+ WHERE i.blnDeleted=0
+ ORDER BY i.datDateOfIncident
